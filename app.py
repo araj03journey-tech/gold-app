@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # تنظیمات صفحه
-st.set_page_config(page_title="سیستم آذزی محاسبات گالری طلا", page_icon="💰", layout="centered")
+st.set_page_config(page_title="سیستم جامع محاسبات علیرضا گالری طلا", page_icon="💰", layout="centered")
 
 # استایل‌دهی برای راست‌چین کردن و زیبایی موبایل
 st.markdown("""
@@ -24,7 +24,7 @@ st.markdown("""
         font-size: 20px !important;
     }
     .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
+        gap: 5px;
     }
     .stTabs [data-baseweb="tab"] {
         height: 50px;
@@ -32,7 +32,8 @@ st.markdown("""
         background-color: #f0f2f6;
         border-radius: 10px 10px 0px 0px;
         gap: 1px;
-        padding: 10px;
+        padding: 5px;
+        font-size: 14px;
     }
     .stTabs [aria-selected="true"] {
         background-color: #007bff !important;
@@ -53,8 +54,8 @@ else:
 
 st.markdown("---")
 
-# ایجاد دو پنل مجزا
-tab1, tab2 = st.tabs(["🛒 محاسبه فروش ویترینی", "⚖️ تبدیل عیار و راهنما"])
+# ایجاد سه پنل مجزا
+tab1, tab2, tab3 = st.tabs(["🛒 فروش", "⚖️ عیار", "🔄 تعویض"])
 
 # --- پنل اول: محاسبه فروش ---
 with tab1:
@@ -93,7 +94,6 @@ with tab2:
             st.error("لطفاً نرخ طلا و وزن قطعه را وارد کنید.")
 
     st.markdown("---")
-    # اضافه شدن جدول راهنمای عیار
     st.subheader("📌 راهنمای سریع تبدیل عیار")
     
     data = {
@@ -102,5 +102,48 @@ with tab2:
     }
     df = pd.DataFrame(data)
     st.table(df)
+
+# --- پنل سوم: تعویض طلا (جدید) ---
+with tab3:
+    st.header("محاسبه مابه‌التفاوت تعویض")
     
-    st.caption("نکته: در محاسبات تبدیل عیار، عدد خلوص قطعه را در کادر بالا وارد کنید.")
+    st.subheader("۱. طلای کهنه (دریافتی از مشتری)")
+    old_weight = st.number_input("وزن طلای مشتری (گرم)", value=0.0, format="%.3f", key="old_w")
+    
+    st.divider()
+    
+    st.subheader("۲. طلای جدید (فروش به مشتری)")
+    col3, col4 = st.columns(2)
+    with col3:
+        new_weight = st.number_input("وزن طلای جدید (گرم)", value=0.0, format="%.3f", key="new_w")
+    with col4:
+        new_wage = st.number_input("اجرت طلای جدید (درصد)", value=0, step=5, key="new_wage")
+        
+    if st.button("🔄 محاسبه فاکتور تعویض"):
+        if current_rate > 0 and old_weight > 0 and new_weight > 0:
+            # محاسبه ارزش طلای کهنه (کسر 150 هزار تومان از نرخ روز)
+            buy_rate = current_rate - 150000
+            old_gold_value = buy_rate * old_weight
+            
+            # محاسبه ارزش طلای جدید (با فرمول فروش ویترین)
+            price_per_gram_new = current_rate + (current_rate * (new_wage / 100))
+            new_gold_value = price_per_gram_new * 1.25 * new_weight
+            
+            # محاسبه مابه‌التفاوت
+            difference = old_gold_value - new_gold_value
+            
+            st.markdown(f"**ارزش طلای مشتری:** `{old_gold_value:,.0f} تومان` (بر مبنای گرمی {buy_rate:,.0f})")
+            st.markdown(f"**ارزش طلای جدید:** `{new_gold_value:,.0f} تومان`")
+            
+            st.divider()
+            
+            if difference < 0:
+                # مشتری باید پول بدهد
+                st.error(f"💳 مشتری باید پرداخت کند: **{abs(difference):,.0f}** تومان")
+            elif difference > 0:
+                # گالری باید پول بدهد
+                st.success(f"💵 گالری باید پرداخت کند: **{difference:,.0f}** تومان")
+            else:
+                st.info("⚖️ تعویض سر به سر شد (بدون نیاز به پرداخت).")
+        else:
+            st.error("لطفاً نرخ طلا، وزن طلای مشتری و وزن طلای جدید را به درستی وارد کنید.")
