@@ -1,7 +1,8 @@
 import streamlit as st
+import pandas as pd
 
 # تنظیمات صفحه
-st.set_page_config(page_title="سیستم Alirezaa محاسبات گالری طلا", page_icon="💰", layout="centered")
+st.set_page_config(page_title="سیستم جامع محاسبات گالری طلا", page_icon="💰", layout="centered")
 
 # استایل‌دهی برای راست‌چین کردن و زیبایی موبایل
 st.markdown("""
@@ -42,10 +43,9 @@ st.markdown("""
 
 st.title("💎 سیستم مدیریت محاسبات گالری")
 
-# تغییر جدید: استفاده از فیلد عددی برای باز شدن خودکار کیبورد اعداد در موبایل
+# ورودی نرخ طلا با کیبورد عددی در موبایل
 current_rate = st.number_input("📈 نرخ هر گرم طلا (تومان)", min_value=0, value=0, step=10000)
 
-# نمایش لحظه‌ای عدد با تفکیک ۳ رقمی برای جلوگیری از اشتباه تایپی
 if current_rate > 0:
     st.info(f"✅ مبلغ در حال محاسبه: **{current_rate:,.0f}** تومان")
 else:
@@ -54,15 +54,12 @@ else:
 st.markdown("---")
 
 # ایجاد دو پنل مجزا
-tab1, tab2 = st.tabs(["🛒 محاسبه فروش ویترینی", "⚖️ تبدیل عیار و محاسبه"])
+tab1, tab2 = st.tabs(["🛒 محاسبه فروش ویترینی", "⚖️ تبدیل عیار و راهنما"])
 
 # --- پنل اول: محاسبه فروش ---
 with tab1:
     st.header("محاسبه قیمت اتیکت")
-    
-    # اجرت بدون اعشار و با پرش ۵ تایی
     wage_percent = st.number_input("اجرت روی اتیکت (درصد)", value=0, step=5, key="wage_1")
-    
     weight_sale = st.number_input("وزن کل (گرم)", value=0.0, format="%.3f", key="weight_1")
     
     if st.button("🧮 محاسبه قیمت فروش"):
@@ -76,28 +73,34 @@ with tab1:
 # --- پنل دوم: تبدیل عیار ---
 with tab2:
     st.header("تبدیل عیار به ۷۵۰")
+    
     col1, col2 = st.columns(2)
     with col1:
         weight_raw = st.number_input("وزن قطعه (گرم)", value=0.0, format="%.3f", key="w_raw")
     with col2:
-        karat_raw = st.number_input("عیار قطعه (مثلاً ۷۴۰ یا ۹۰۰)", value=750, key="k_raw")
-    
-    st.divider()
+        karat_raw = st.number_input("عیار قطعه (عدد خلوص)", value=750, key="k_raw")
     
     if st.button("🚀 تبدیل عیار و محاسبه"):
         if current_rate > 0 and weight_raw > 0:
-            # ۱. تبدیل وزن به عیار ۷۵۰
             converted_weight = (weight_raw * karat_raw) / 750
-            
-            # ۲. اضافه کردن ۱ درصد به نرخ طلا
             adjusted_rate = current_rate + (current_rate * 0.01)
-            
-            # ۳. محاسبه نهایی
             final_calc = converted_weight * adjusted_rate
             
-            # نمایش خروجی‌ها
             st.markdown(f"**وزن تبدیل شده به ۷۵۰:** `{converted_weight:.3f} گرم` ")
             st.markdown(f"**نرخ با احتساب ۱٪:** `{adjusted_rate:,.0f} تومان` ")
             st.success(f"💵 مبلغ نهایی: **{final_calc:,.0f}** تومان")
         else:
             st.error("لطفاً نرخ طلا و وزن قطعه را وارد کنید.")
+
+    st.markdown("---")
+    # اضافه شدن جدول راهنمای عیار
+    st.subheader("📌 راهنمای سریع تبدیل عیار")
+    
+    data = {
+        "عیار مرسوم": ["۱۷ عیار", "۱۸ عیار", "۲۰ عیار", "۲۱ عیار", "۲۲ عیار", "۲۴ عیار"],
+        "عدد خلوص": ["۷۰۸", "۷۵۰", "۸۳۳", "۸۷۵", "۹۱۶", "۱۰۰۰ (۹۹۹)"]
+    }
+    df = pd.DataFrame(data)
+    st.table(df)
+    
+    st.caption("نکته: در محاسبات تبدیل عیار، عدد خلوص قطعه را در کادر بالا وارد کنید.")
