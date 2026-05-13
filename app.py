@@ -1,7 +1,7 @@
 import streamlit as st
 
 # تنظیمات صفحه
-st.set_page_config(page_title="سیستم جامع محاسبات گالری طلا", page_icon="💰", layout="centered")
+st.set_page_config(page_title="سیستم جامع Alirezaa محاسبات گالری طلا", page_icon="💰", layout="centered")
 
 # استایل‌دهی برای راست‌چین کردن و زیبایی موبایل
 st.markdown("""
