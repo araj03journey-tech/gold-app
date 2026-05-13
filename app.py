@@ -1,7 +1,7 @@
 import streamlit as st
 
 # تنظیمات صفحه
-st.set_page_config(page_title="سیستم جامع Alirezaa محاسبات گالری طلا", page_icon="💰", layout="centered")
+st.set_page_config(page_title="سیستم Alirezaa محاسبات گالری طلا", page_icon="💰", layout="centered")
 
 # استایل‌دهی برای راست‌چین کردن و زیبایی موبایل
 st.markdown("""
@@ -20,6 +20,7 @@ st.markdown("""
     }
     input {
         text-align: center;
+        font-size: 20px !important;
     }
     .stTabs [data-baseweb="tab-list"] {
         gap: 10px;
@@ -41,14 +42,12 @@ st.markdown("""
 
 st.title("💎 سیستم مدیریت محاسبات گالری")
 
-# ورودی مشترک نرخ طلا در ابتدای صفحه
-rate_input = st.text_input("📈 نرخ هر گرم طلا (تومان) - آزاد تایپ کنید", value="", help="می‌توانید با فاصله یا نقطه جدا کنید، سیستم خودش اصلاح می‌کند")
-clean_rate = rate_input.replace(",", "").replace(" ", "").replace(".", "")
+# تغییر جدید: استفاده از فیلد عددی برای باز شدن خودکار کیبورد اعداد در موبایل
+current_rate = st.number_input("📈 نرخ هر گرم طلا (تومان)", min_value=0, value=0, step=10000)
 
-current_rate = 0
-if clean_rate and clean_rate.isdigit():
-    current_rate = int(clean_rate)
-    st.info(f"✅ نرخ مبنا: **{current_rate:,.0f}** تومان")
+# نمایش لحظه‌ای عدد با تفکیک ۳ رقمی برای جلوگیری از اشتباه تایپی
+if current_rate > 0:
+    st.info(f"✅ مبلغ در حال محاسبه: **{current_rate:,.0f}** تومان")
 else:
     st.warning("⚠️ ابتدا نرخ طلا را وارد کنید تا محاسبات فعال شود.")
 
@@ -60,7 +59,10 @@ tab1, tab2 = st.tabs(["🛒 محاسبه فروش ویترینی", "⚖️ تب�
 # --- پنل اول: محاسبه فروش ---
 with tab1:
     st.header("محاسبه قیمت اتیکت")
-    wage_percent = st.number_input("اجرت روی اتیکت (درصد)", value=0.0, key="wage_1")
+    
+    # اجرت بدون اعشار و با پرش ۵ تایی
+    wage_percent = st.number_input("اجرت روی اتیکت (درصد)", value=0, step=5, key="wage_1")
+    
     weight_sale = st.number_input("وزن کل (گرم)", value=0.0, format="%.3f", key="weight_1")
     
     if st.button("🧮 محاسبه قیمت فروش"):
